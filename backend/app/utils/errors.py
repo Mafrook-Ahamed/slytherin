@@ -41,6 +41,7 @@ STATUS_CODE_TO_ERROR_CODE: Dict[int, ErrorCode] = {
     401: ErrorCode.UNAUTHORIZED,
     403: ErrorCode.FORBIDDEN,
     404: ErrorCode.NOT_FOUND,
+    405: ErrorCode.BAD_REQUEST,
     409: ErrorCode.CONFLICT,
     422: ErrorCode.VALIDATION_ERROR,
     429: ErrorCode.RATE_LIMITED,

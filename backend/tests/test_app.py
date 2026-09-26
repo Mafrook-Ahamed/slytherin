@@ -5,8 +5,22 @@ from __future__ import annotations
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pydantic import BaseModel
 
 from app.main import create_app
+
+
+class SamplePayload(BaseModel):
+    """Request model used to trigger a validation failure.
+
+    Declared at module scope on purpose: this module uses
+    ``from __future__ import annotations``, so annotations reach FastAPI as
+    strings. A class defined inside a test function is not present in the module
+    globals and FastAPI then reports a model level error instead of pointing at
+    the offending field.
+    """
+
+    email: str
 
 
 def test_root_returns_welcome_payload(client: TestClient) -> None:
@@ -104,11 +118,6 @@ def test_application_error_uses_declared_code(client: TestClient) -> None:
 
 def test_validation_errors_keep_field_details(client: TestClient) -> None:
     """Validation failures must report which fields were wrong."""
-
-    from pydantic import BaseModel
-
-    class SamplePayload(BaseModel):
-        email: str
 
     test_app: FastAPI = create_app()
 

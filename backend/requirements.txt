@@ -7,6 +7,18 @@ pydantic>=2.7,<3.0
 pydantic-settings>=2.3,<3.0
 python-dotenv>=1.0,<2.0
 
+# Database (Step 03)
+SQLAlchemy>=2.0,<3.0
+alembic>=1.13,<2.0
+psycopg[binary]>=3.2,<4.0
+
+# Authentication (Step 05)
+pwdlib[argon2]>=0.2,<1.0
+PyJWT>=2.9,<3.0
+
 # Testing
 pytest>=8.2,<9.0
 httpx>=0.27,<1.0
+# SQLite driver so the test-suite can build a real database without a running
+# PostgreSQL server. Development and production use psycopg above.
+aiosqlite>=0.20,<1.0

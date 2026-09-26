@@ -8,6 +8,7 @@ configuration fails fast instead of at the first request.
 
 from __future__ import annotations
 
+import json
 from enum import Enum
 from functools import lru_cache
 from typing import Annotated, Any, List
@@ -99,7 +100,13 @@ class Settings(BaseSettings):
             if not raw:
                 return []
             if raw.startswith("[") and raw.endswith("]"):
-                return value
+                try:
+                    return json.loads(raw)
+                except json.JSONDecodeError as exc:  # pragma: no cover - defensive
+                    raise ValueError(
+                        "CORS_ORIGINS must be a comma separated list of origins "
+                        "or a JSON array of origins."
+                    ) from exc
             return [origin.strip() for origin in raw.split(",") if origin.strip()]
         return value
 

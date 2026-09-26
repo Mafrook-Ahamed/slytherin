@@ -29,6 +29,17 @@ _SECRET_KEY_PATTERN = re.compile(
     r")(?P<quote>[\"']?)(?P<value>[^\"'\s,;&}\]]+)(?P=quote)"
 )
 
+#: ``Authorization: Bearer <token>`` / ``Cookie: a=b; c=d``. Handled separately
+#: because the credential is two words and a session cookie may contain ``=``,
+#: both of which the single-token pattern above would truncate.
+_AUTH_HEADER_PATTERN = re.compile(
+    r"(?i)(?P<prefix>"
+    r"[\"']?(?:authorization|proxy-authorization|cookie|set-cookie)"
+    r"[\"']?\s*[:=]\s*[\"']?"
+    r")(?P<value>bearer\s+[^\"'\s,;&}\]]+|[^\"',;&}\]]*)"
+    r"(?P<quote>[\"']?)"
+)
+
 #: JWTs are masked on sight, even when they appear without a key.
 _JWT_PATTERN = re.compile(
     r"\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{4,}\b"
@@ -40,10 +51,13 @@ _MASK = "***REDACTED***"
 def redact_secrets(text: str) -> str:
     """Replace credential-looking values inside ``text`` with a mask."""
 
+    masked = _AUTH_HEADER_PATTERN.sub(
+        lambda match: f"{match.group('prefix')}{_MASK}", text
+    )
     masked = _SECRET_KEY_PATTERN.sub(
         lambda match: f"{match.group('prefix')}{match.group('quote')}"
         f"{_MASK}{match.group('quote')}",
-        text,
+        masked,
     )
     return _JWT_PATTERN.sub(_MASK, masked)
 

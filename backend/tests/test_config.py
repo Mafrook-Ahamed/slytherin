@@ -10,8 +10,28 @@ from app.utils.errors import AppError, NotFoundError, error_payload
 from app.utils.logging_config import redact_secrets
 
 
-def test_defaults_match_documented_values() -> None:
+#: Environment variables that :data:`app.config.Settings` reads. Cleared before
+#: asserting on defaults so the result does not depend on ``conftest``.
+_SETTINGS_ENV_VARS = (
+    "APP_NAME",
+    "APP_VERSION",
+    "ENVIRONMENT",
+    "DEBUG",
+    "LOG_LEVEL",
+    "API_PREFIX",
+    "DOCS_ENABLED",
+    "CORS_ORIGINS",
+    "CORS_ALLOW_CREDENTIALS",
+)
+
+
+def test_defaults_match_documented_values(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """A missing .env file must still produce a usable configuration."""
+
+    for name in _SETTINGS_ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
 
     settings = Settings(_env_file=None)
 
