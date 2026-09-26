@@ -7,6 +7,8 @@ added here without touching the API layer.
 
 from __future__ import annotations
 
+from fastapi import Depends
+
 from app.config import Settings, get_settings
 from app.repositories.health import HealthRepository, ProcessHealthRepository
 from app.schemas.health import HealthResponse
@@ -47,11 +49,14 @@ def get_health_repository() -> HealthRepository:
 
 
 def get_health_service(
-    repository: HealthRepository | None = None,
+    repository: HealthRepository = Depends(get_health_repository),
 ) -> HealthService:
-    """FastAPI dependency providing a :class:`HealthService`."""
+    """FastAPI dependency providing a :class:`HealthService`.
 
-    return HealthService(
-        settings=get_settings(),
-        repository=repository or get_health_repository(),
-    )
+    The repository is declared with :func:`~fastapi.Depends` so FastAPI resolves
+    it from :func:`get_health_repository`. Without the explicit dependency the
+    protocol annotation would be interpreted as a request parameter and Pydantic
+    would reject it.
+    """
+
+    return HealthService(settings=get_settings(), repository=repository)

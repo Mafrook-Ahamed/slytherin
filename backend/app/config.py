@@ -10,10 +10,10 @@ from __future__ import annotations
 
 from enum import Enum
 from functools import lru_cache
-from typing import Any, List
+from typing import Annotated, Any, List
 
 from pydantic import Field, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Environment(str, Enum):
@@ -78,7 +78,9 @@ class Settings(BaseSettings):
     # --- API ------------------------------------------------------------------
     api_prefix: str = "/api/v1"
     docs_enabled: bool = True
-    cors_origins: List[str] = Field(default_factory=_default_cors_origins)
+    cors_origins: Annotated[List[str], NoDecode] = Field(
+        default_factory=_default_cors_origins
+    )
     cors_allow_credentials: bool = True
 
     @field_validator("cors_origins", mode="before")
@@ -86,9 +88,10 @@ class Settings(BaseSettings):
     def _parse_cors_origins(cls, value: Any) -> Any:
         """Accept both ``a,b`` and JSON ``["a","b"]`` forms from the environment.
 
-        Pydantic Settings attempts JSON decoding for list fields, so the plain
-        comma separated form used in ``.env`` has to be handled before that
-        happens.
+        The field is annotated with :class:`~pydantic_settings.NoDecode` so the
+        raw environment string reaches this validator. Without it pydantic-settings
+        tries to JSON-decode complex fields first and raises ``SettingsError``
+        before this parser ever runs.
         """
 
         if isinstance(value, str):

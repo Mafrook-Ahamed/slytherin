@@ -11,6 +11,8 @@ import os
 from collections.abc import Iterator
 from typing import AsyncGenerator
 
+import pytest
+
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("DEBUG", "false")
 os.environ.setdefault("LOG_LEVEL", "WARNING")
@@ -37,7 +39,7 @@ def client(app: object) -> Iterator[TestClient]:
     """Provide a synchronous test client for the application."""
 
     with TestClient(app, raise_server_exceptions=False) as test_client:
-        yield testClient
+        yield test_client
 
 
 @pytest.fixture
